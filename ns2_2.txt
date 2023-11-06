@@ -1,0 +1,79 @@
+# Create a new simulator
+set ns [new Simulator]
+
+# Create nodes
+set n0 [$ns node]
+set n1 [$ns node]
+
+# Label the nodes
+$ns at 0.0 "$n0 label Sender"
+$ns at 0.0 "$n1 label Receiver"
+
+# Open NAM (Network Animator) trace file
+set nf [open sliding.nam w]
+$ns namtrace-all $nf
+
+# Open general trace file
+set f [open sliding.tr w]
+$ns trace-all $f
+
+# Create a duplex link between nodes
+$ns duplex-link $n0 $n1 0.2Mb 200ms DropTail
+
+# Set link orientation for NAM visualization
+$ns duplex-link-op $n0 $n1 orient right
+
+# Set queue limit
+$ns queue-limit $n0 $n1 10
+
+# Create a TCP agent with specific parameters
+set tcp [new Agent/TCP]
+$tcp set windowInit_ 4
+$tcp set maxcwnd_ 4
+$ns attach-agent $n0 $tcp
+
+# Create a TCP sink agent
+set sink [new Agent/TCPSink]
+$ns attach-agent $n1 $sink
+
+# Connect TCP agent to sink
+$ns connect $tcp $sink
+
+# Set up Application layer (FTP)
+set ftp [new Application/FTP]
+$ftp attach-agent $tcp
+
+# Add trace and monitor for TCP agent
+$ns add-agent-trace $tcp tcp
+$ns monitor-agent-trace $tcp
+
+# Trace the congestion window variable
+$tcp tracevar cwnd_
+
+# Schedule FTP application start
+$ns at 0.1 "$ftp start"
+
+# Schedule detachment of agents at 3 seconds
+$ns at 3.0 "$ns detach-agent $n0 $tcp ; $ns detach-agent $n1 $sink"
+
+# Schedule finish procedure at 3.5 seconds
+$ns at 3.5 "finish"
+
+# Define the finish procedure
+proc finish {} {
+    global ns
+
+    # Flush traces
+    $ns flush-trace
+
+    # Uncomment the line below to run NAM visualization
+    # close $nf
+    puts "running nam..."
+    exec nam sliding.nam &
+    
+    # Exit the simulation
+    exit 0
+}
+
+# Run the simulation
+$ns run
