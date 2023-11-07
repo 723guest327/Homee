@@ -1,0 +1,20 @@
+# Display the current routing table
+netstat -rn
+# Add a route for a specific network
+route ADD destination_network MASK subnet_mask gateway_ip METRIC metric_value
+# Delete a route for a specific network
+route DELETE destination_network
+# Change the default gateway
+route CHANGE 0.0.0.0 MASK 0.0.0.0 new_gateway_ip METRIC metric_value
+# Add a route for the network 192.168.1.0 with a subnet mask of 255.255.255.0
+# and a gateway of 192.168.0.1 with a metric of 10
+route ADD 192.168.1.0 MASK 255.255.255.0 192.168.0.1 METRIC 10
+
+# Delete the route for the network 192.168.1.0
+route DELETE 192.168.1.0
+
+# Change the default gateway to 192.168.1.1 with a metric of 20
+route CHANGE 0.0.0.0 MASK 0.0.0.0 192.168.1.1 METRIC 20
+route ADD 192.168.1.0 MASK 255.255.255.0 192.168.0.1 METRIC 10
+route DELETE 192.168.1.0
+route CHANGE 0.0.0.0 MASK 0.0.0.0 192.168.1.1 METRIC 20
